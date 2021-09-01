@@ -1,0 +1,147 @@
+---
+  
+- name: Install prerequisites 
+  when: 
+  - ansible_facts['distribution'] == "Amazon"
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - httpd
+  - php-{{ php_version }}
+  - php-mysql-{{ php_version }}
+  - telnet
+  notify: Start webserver
+
+
+- name: Get wordpress 
+  when: 
+  - ansible_facts['distribution'] == "Amazon"
+  get_url:
+    url: https://wordpress.org/wordpress-{{ wordpress_version }}.tar.gz
+    dest: /tmp/wordpress-{{ wordpress_version }}.tar.gz
+    mode: '0440'
+
+
+- name: Unzip Wordpress
+  when: 
+  - ansible_facts['distribution'] == "Amazon"
+  unarchive:
+    src: /tmp/wordpress-{{ wordpress_version }}.tar.gz
+    dest: /var/www/html/
+    remote_src: true
+
+
+- name: Move wordpress
+  when: 
+  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution_version'] == "2"
+  shell: "cp -r  /var/www/html/wordpress/*   /var/www/html || exit 0"
+  ignore_errors: true
+
+- name: cache
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install apache2 
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  package: 
+    name:
+      - apache2
+      - telnet
+    state: present
+  notify: Start webserver Ubuntu
+  
+- name: Enable ufw to allow Apache
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  ufw:
+    rule: allow
+    name: Apache Full
+    
+
+
+- name: Install prerequisites Ubuntu
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - php
+  - libapache2-mod-php
+  - php-mysql
+  - php-curl
+  - php-gd 
+  - php-json
+  - php-zip
+  - php-mbstring
+
+- name: Replace dir.conf file
+  copy:
+    src: ./test-file
+    dest: /etc/apache2/mods-enabled/dir.conf  
+- name: Download Wordpress file
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  get_url:
+    url: https://wordpress.org/latest.tar.gz
+    dest: /tmp
+
+- name: Unzip wordpress file
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  unarchive:
+    src: /tmp/wordpress-5.8.tar.gz
+    dest: /var/www/html
+    remote_src: true   
+
+- name: Move wordpress file
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  shell: "mv -f /var/www/html/wordpress/*   /var/www/html || exit 0"
+  ignore_errors: true    
+
+- name: Fix html file ownership
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"  
+  file:
+    path: /var/www/html
+    owner: www-data
+    group: www-data
+    state: directory
+    recurse: yes
+ 
+
+- name: Ensure group "somegroup" exists
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"
+  ansible.builtin.group:
+    name: devops
+    state: present
+
+- name: Allow 'devops' group to have passwordless sudo
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%devops'
+    line: '%devops ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+
+- name: Add user to Ubuntu
+  when: 
+  - ansible_facts['distribution'] == "Ubuntu"
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: devops
+    generate_ssh_key: yes
+  with_items:
+  - "{{ users }}"
+
