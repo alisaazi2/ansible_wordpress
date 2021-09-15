@@ -1,5 +1,5 @@
 --- 
-- name: execute role
+- name: execute
   hosts: all
   become: yes
   become_method: sudo 
