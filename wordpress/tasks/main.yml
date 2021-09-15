@@ -2,7 +2,7 @@
   
 - name: Install prerequisites 
   when: 
-  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution'] == "CentOS"
   package:
     name: "{{ item }}"
     state: present
@@ -16,7 +16,7 @@
 
 - name: Get wordpress 
   when: 
-  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution'] == "CentOS"
   get_url:
     url: https://wordpress.org/wordpress-{{ wordpress_version }}.tar.gz
     dest: /tmp/wordpress-{{ wordpress_version }}.tar.gz
@@ -25,7 +25,7 @@
 
 - name: Unzip Wordpress
   when: 
-  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution'] == "CentOS"
   unarchive:
     src: /tmp/wordpress-{{ wordpress_version }}.tar.gz
     dest: /var/www/html/
@@ -34,7 +34,7 @@
 
 - name: Move wordpress
   when: 
-  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution'] == "CentOS"
   - ansible_facts['distribution_version'] == "2"
   shell: "cp -r  /var/www/html/wordpress/*   /var/www/html || exit 0"
   ignore_errors: true

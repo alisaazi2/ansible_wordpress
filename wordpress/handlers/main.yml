@@ -1,7 +1,7 @@
 ---
 - name: Start webserver
   when: 
-  - ansible_facts['distribution'] == "Amazon"
+  - ansible_facts['distribution'] == "CentOs"
   systemd: 
     name: "{{ item }}" 
     state: restarted
