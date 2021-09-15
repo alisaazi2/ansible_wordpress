@@ -35,7 +35,6 @@
 - name: Move wordpress
   when: 
   - ansible_facts['distribution'] == "CentOS"
-  - ansible_facts['distribution_version'] == "2"
   shell: "cp -r  /var/www/html/wordpress/*   /var/www/html || exit 0"
   ignore_errors: true
 
