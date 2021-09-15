@@ -13,6 +13,7 @@
   - telnet
   notify: Start webserver
   
+  handlers:
   - name: Start webserver
   when: 
   - ansible_facts['distribution'] == "CentOs"
